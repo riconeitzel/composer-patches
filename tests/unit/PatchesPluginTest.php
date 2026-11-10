@@ -8,12 +8,22 @@
 namespace cweagans\Composer\Tests\Unit;
 
 use Codeception\Test\Unit;
+use Codeception\Util\Stub;
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Installer\InstallationManager;
+use Composer\Installer\InstallerInterface;
+use Composer\Installer\PackageEvent;
 use Composer\IO\NullIO;
+use Composer\Package\Package;
 use Composer\Package\RootPackage;
 use cweagans\Composer\Patch;
+use cweagans\Composer\PatchCollection;
 use cweagans\Composer\Plugin\Patches;
+use RuntimeException;
 
 class PatchesPluginTest extends Unit
 {
@@ -48,6 +58,68 @@ class PatchesPluginTest extends Unit
         $path = Patches::getPatchesLockFilePath();
         $filename = pathinfo($path, \PATHINFO_BASENAME);
         $this->assertEquals('mycomposer-patches.lock.json', $filename);
+    }
+
+    /**
+     * @dataProvider metapackageOperations
+     */
+    public function testMetapackageWithPatchesFailsClearly(OperationInterface $operation)
+    {
+        $patch = new Patch();
+        $patch->package = 'test/metapackage';
+        $patch->url = 'metapackage.patch';
+        $patch->description = 'Attempt to patch a metapackage';
+        $collection = new PatchCollection();
+        $collection->addPatch($patch);
+        $installer = $this->createMock(InstallerInterface::class);
+        $installer->method('getInstallPath')->willReturn(null);
+        $manager = $this->createMock(InstallationManager::class);
+        $manager->method('getInstaller')->willReturn($installer);
+        $composer = new Composer();
+        $composer->setInstallationManager($manager);
+        $plugin = Stub::make(Patches::class, [
+            'composer' => $composer,
+            'io' => new NullIO(),
+            'patchCollection' => $collection,
+        ]);
+        $manager->expects($this->never())->method('getInstaller');
+        $event = Stub::make(PackageEvent::class, ['getOperation' => $operation]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(
+            'Cannot patch metapackage test/metapackage: it has no files or installation directory. '
+            . 'Target the dependency that contains the files instead.'
+        );
+
+        $plugin->patchPackage($event);
+    }
+
+    /**
+     * @dataProvider metapackageOperations
+     */
+    public function testMetapackageWithoutPatchesIsIgnored(OperationInterface $operation)
+    {
+        $io = $this->createMock(NullIO::class);
+        $io->expects($this->once())->method('write')->with(
+            'No patches found for <info>test/metapackage</info>',
+            true,
+            NullIO::DEBUG
+        );
+        $plugin = Stub::make(Patches::class, [
+            'patchCollection' => new PatchCollection(),
+            'io' => $io,
+        ]);
+        $event = Stub::make(PackageEvent::class, ['getOperation' => $operation]);
+
+        $plugin->patchPackage($event);
+    }
+
+    public function metapackageOperations(): iterable
+    {
+        $package = new Package('test/metapackage', '1.0.0.0', '1.0.0');
+        $package->setType('metapackage');
+        yield 'install' => [new InstallOperation($package)];
+        yield 'update' => [new UpdateOperation(new Package('test/metapackage', '0.9.0.0', '0.9.0'), $package)];
     }
 
     /**

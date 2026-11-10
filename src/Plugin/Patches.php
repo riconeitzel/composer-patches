@@ -41,6 +41,7 @@ use cweagans\Composer\Resolver;
 use cweagans\Composer\Util;
 use InvalidArgumentException;
 use Exception;
+use RuntimeException;
 
 class Patches implements PluginInterface, EventSubscriberInterface, Capable
 {
@@ -328,6 +329,15 @@ class Patches implements PluginInterface, EventSubscriberInterface, Capable
                 IOInterface::DEBUG,
             );
             return;
+        }
+
+        if ($package->getType() === 'metapackage') {
+            throw new RuntimeException(
+                "Cannot patch metapackage {$package->getName()}: it has no files or installation directory. "
+                . "Target the dependency that contains the files instead. "
+                . "To change dependency requirements, use a package repository in your root composer.json. "
+                . "See https://docs.cweagans.net/composer-patches/troubleshooting/non-patchable-targets/#metapackages"
+            );
         }
 
         $install_path = $this->composer->getInstallationManager()
