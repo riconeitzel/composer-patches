@@ -7,6 +7,24 @@ weight: 10
 
 ## Configuration provided by Composer Patches
 
+### `metadata-patch-providers`
+
+**Default value**: empty
+
+An explicit list of directly required, exact-version metapackages trusted to supply patches to other metapackages' dependency metadata **before resolution**. This is separate from ordinary file patches. See [metapackage metadata patches]({{< relref "metapackage-metadata.md" >}}) for the required bootstrap, bundled asset format, and full-update-only limitations.
+
+```json
+{
+    "extra": {
+        "composer-patches": {
+            "metadata-patch-providers": ["my/custom-meta"]
+        }
+    }
+}
+```
+
+---
+
 ### `patches-file`
 
 ```json

@@ -3,6 +3,12 @@ title: Commands
 weight: 50
 ---
 
+## `composer patches-metadata <package> <version>`
+
+Exports the unpatched, dependency-only manifest for an exact stable metapackage version in the root repositories. Redirect stdout to a file to create the baseline for a unified diff. This command does not apply patches or modify the project. See [metapackage metadata patches]({{< relref "metapackage-metadata.md" >}}).
+
+---
+
 ## `composer patches-relock`
 **Alias**: `composer prl`
 

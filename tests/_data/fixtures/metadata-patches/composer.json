@@ -1,0 +1,66 @@
+{
+  "name": "cweagans/metadata-patches-test-project",
+  "description": "Root project requiring a custom metapackage which patches an external metapackage.",
+  "license": "BSD-3-Clause",
+  "repositories": [
+    {
+      "type": "package",
+      "package": [
+        {
+          "name": "cweagans/external-metapackage",
+          "version": "1.0.0",
+          "type": "metapackage",
+          "require": {
+            "cweagans/metapackage-test-package": "^1.0"
+          }
+        },
+        {
+          "name": "cweagans/new-metapackage",
+          "version": "1.0.0",
+          "type": "metapackage",
+          "require": {
+            "cweagans/metadata-leaf": "^1.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "path",
+      "url": "../../metadata-provider"
+    },
+    {
+      "type": "path",
+      "url": "../../metapackage-test-package",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../../metadata-leaf",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../../../../"
+    }
+  ],
+  "require": {
+    "cweagans/composer-patches": "*@dev",
+    "cweagans/metadata-provider": "1.0.0"
+  },
+  "extra": {
+    "composer-patches": {
+      "metadata-patch-providers": [
+        "cweagans/metadata-provider"
+      ]
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "cweagans/composer-patches": true
+    }
+  }
+}

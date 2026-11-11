@@ -1,0 +1,19 @@
+{
+  "name": "cweagans/metadata-patches-bootstrap",
+  "description": "Isolated Composer home for bootstrapping the metadata patch plugin.",
+  "license": "BSD-3-Clause",
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../../../"
+    }
+  ],
+  "require": {
+    "cweagans/composer-patches": "*@dev"
+  },
+  "config": {
+    "allow-plugins": {
+      "cweagans/composer-patches": true
+    }
+  }
+}

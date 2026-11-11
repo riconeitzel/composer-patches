@@ -1,0 +1,7 @@
+{
+  "name": "cweagans/metadata-leaf",
+  "description": "A previously undiscovered transitive dependency.",
+  "version": "1.0.0",
+  "type": "library",
+  "license": "BSD-3-Clause"
+}

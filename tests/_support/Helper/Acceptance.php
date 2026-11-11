@@ -22,6 +22,9 @@ class Acceptance extends Module
 
         $composerVendorDirs = glob($this->_getFixturesDir() . '/*/vendor');
         $filesystem->remove($composerVendorDirs);
+
+        $bootstrap = $this->_getFixturesDir() . '/metadata-patches-bootstrap';
+        $filesystem->remove([$bootstrap . '/cache', $bootstrap . '/empty-home', $bootstrap . '/.htaccess']);
     }
 
     protected function _getFixturesDir()

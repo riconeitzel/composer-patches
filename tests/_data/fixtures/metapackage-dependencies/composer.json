@@ -1,0 +1,57 @@
+{
+  "name": "cweagans/composer-patches-test-project",
+  "description": "Test metapackage metadata overrides and patches to their dependencies.",
+  "type": "project",
+  "license": "BSD-3-Clause",
+  "repositories": [
+    {
+      "type": "package",
+      "package": {
+        "name": "cweagans/test-metapackage",
+        "version": "1.0.0",
+        "type": "metapackage",
+        "require": {
+          "cweagans/metapackage-test-package": "^2.0"
+        },
+        "extra": {
+          "patches": {
+            "cweagans/metapackage-test-package": {
+              "Patch the metapackage's filesystem dependency": "dependency.patch"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "cweagans/test-metapackage",
+        "version": "1.0.0",
+        "type": "metapackage",
+        "require": {
+          "cweagans/metapackage-test-package": "^1.0"
+        }
+      }
+    },
+    {
+      "type": "path",
+      "url": "../../metapackage-test-package",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../../../../"
+    }
+  ],
+  "require": {
+    "cweagans/composer-patches": "*@dev",
+    "cweagans/test-metapackage": "1.0.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "cweagans/composer-patches": true
+    }
+  }
+}

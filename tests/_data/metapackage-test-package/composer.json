@@ -1,0 +1,7 @@
+{
+  "name": "cweagans/metapackage-test-package",
+  "description": "Filesystem dependency for the metapackage acceptance test.",
+  "version": "2.0.0",
+  "type": "library",
+  "license": "BSD-3-Clause"
+}
