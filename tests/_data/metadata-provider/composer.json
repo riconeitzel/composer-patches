@@ -1,0 +1,23 @@
+{
+  "name": "cweagans/metadata-provider",
+  "description": "Custom metapackage distributing a bundled metadata patch for an external metapackage.",
+  "version": "1.0.0",
+  "type": "metapackage",
+  "license": "BSD-3-Clause",
+  "require": {
+    "cweagans/external-metapackage": "1.0.0"
+  },
+  "extra": {
+    "metadata-patches": {
+      "cweagans/external-metapackage": {
+        "version": "1.0.0",
+        "patches": [
+          {
+            "url": "external.patch",
+            "sha256": "a11836ab8ee982541b4139e109aa263a3c01a155ed21c164b0b4e1378bf0a9c3"
+          }
+        ]
+      }
+    }
+  }
+}

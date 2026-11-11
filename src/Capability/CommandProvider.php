@@ -8,6 +8,7 @@ use Composer\Plugin\Capability\CommandProvider as CommandProviderInterface;
 use cweagans\Composer\Command\DoctorCommand;
 use cweagans\Composer\Command\RepatchCommand;
 use cweagans\Composer\Command\RelockCommand;
+use cweagans\Composer\Command\MetadataCommand;
 
 class CommandProvider implements CommandProviderInterface
 {
@@ -17,6 +18,7 @@ class CommandProvider implements CommandProviderInterface
             new DoctorCommand(),
             new RepatchCommand(),
             new RelockCommand(),
+            new MetadataCommand(),
         ];
     }
 }

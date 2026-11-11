@@ -1,0 +1,12 @@
+diff --git a/composer.json b/composer.json
+--- a/composer.json
++++ b/composer.json
+@@ -3,6 +3,7 @@
+     "version": "1.0.0",
+     "require": {
+-        "cweagans/metapackage-test-package": "^1.0"
++        "cweagans/metapackage-test-package": "^2.0",
++        "cweagans/new-metapackage": "^1.0"
+     },
+     "type": "metapackage"
+ }

@@ -21,6 +21,8 @@ use Composer\Package\PackageInterface;
 use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
 use Composer\Plugin\Capable;
 use Composer\Plugin\PluginInterface;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents as ComposerPluginEvents;
 use Composer\Util\ProcessExecutor;
 use cweagans\Composer\Capability\CommandProvider;
 use cweagans\Composer\Capability\Downloader\CoreDownloaderProvider;
@@ -34,6 +36,7 @@ use cweagans\Composer\Downloader;
 use cweagans\Composer\Event\PatchEvent;
 use cweagans\Composer\Event\PatchEvents;
 use cweagans\Composer\Locker;
+use cweagans\Composer\MetadataPatches;
 use cweagans\Composer\Patch;
 use cweagans\Composer\PatchCollection;
 use cweagans\Composer\Patcher;
@@ -151,6 +154,10 @@ class Patches implements PluginInterface, EventSubscriberInterface, Capable
                 'type' => 'list',
                 'default' => [],
             ],
+            'metadata-patch-providers' => [
+                'type' => 'list',
+                'default' => [],
+            ],
         ];
         $this->configure($this->composer->getPackage()->getExtra(), 'composer-patches');
     }
@@ -163,6 +170,7 @@ class Patches implements PluginInterface, EventSubscriberInterface, Capable
     public static function getSubscribedEvents(): array
     {
         return array(
+            ComposerPluginEvents::COMMAND => ['prepareMetadataPatches'],
             PackageEvents::PRE_PACKAGE_INSTALL => ['loadLockedPatches'],
             PackageEvents::PRE_PACKAGE_UPDATE => ['loadLockedPatches'],
             // The POST_PACKAGE_* events are a higher weight for compatibility with
@@ -173,6 +181,43 @@ class Patches implements PluginInterface, EventSubscriberInterface, Capable
             PackageEvents::POST_PACKAGE_INSTALL => ['patchPackage', 10],
             PackageEvents::POST_PACKAGE_UPDATE => ['patchPackage', 10],
         );
+    }
+
+    public function prepareMetadataPatches(CommandEvent $event): void
+    {
+        $providers = $this->getConfig('metadata-patch-providers');
+        if (!$providers) {
+            return;
+        }
+        if (!is_array($providers) || count(array_unique($providers, SORT_REGULAR)) !== count($providers)) {
+            throw new RuntimeException('metadata-patch-providers must be a list of unique package names.');
+        }
+        $command = $event->getCommandName();
+        if (in_array($command, ['require', 'remove'])) {
+            throw new RuntimeException(
+                'With metadata-patch-providers enabled, edit composer.json and run a full composer update instead.'
+            );
+        }
+        if ($command !== 'update' && $command !== 'install') {
+            return;
+        }
+        if ($command === 'install' && $this->composer->getLocker()->isLocked()) {
+            return;
+        }
+        if ($command === 'update') {
+            $input = $event->getInput();
+            foreach (['lock', 'root-reqs', 'patch-only', 'with'] as $option) {
+                if ($input->hasOption($option) && $input->getOption($option)) {
+                    throw new RuntimeException(
+                        'Metadata patches require a full composer update without version overrides.'
+                    );
+                }
+            }
+            if ($input->getArgument('packages')) {
+                throw new RuntimeException('Metadata patches require a full composer update, not a partial update.');
+            }
+        }
+        (new MetadataPatches($this->composer, $this->io))->prepare($providers);
     }
 
     /**
@@ -335,7 +380,7 @@ class Patches implements PluginInterface, EventSubscriberInterface, Capable
             throw new RuntimeException(
                 "Cannot patch metapackage {$package->getName()}: it has no files or installation directory. "
                 . "Target the dependency that contains the files instead. "
-                . "To change dependency requirements, use a package repository in your root composer.json. "
+                . "To change dependency requirements, configure metadata-patch-providers or a root package repository. "
                 . "See https://docs.cweagans.net/composer-patches/troubleshooting/non-patchable-targets/#metapackages"
             );
         }

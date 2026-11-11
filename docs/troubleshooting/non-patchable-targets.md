@@ -7,15 +7,16 @@ weight: 20
 
 ## Changes to `composer.json`
 
-Attempting to use a patch to change `composer.json` in a dependency will _never_ work like you want it to.  By the time you're running `composer install`, the metadata from your dependencies' composer.json has already been aggregated by packagist (or whatever metadata repo you're using). Therefore, changes to `composer.json` in a dependency will have _no effect_ on installed packages.
+Attempting to use an ordinary filesystem patch to change `composer.json` in a dependency will _never_ change dependency resolution. By the time file patches run, Composer has already selected dependencies using metadata aggregated by Packagist (or whatever metadata repository you're using). Therefore, changes to `composer.json` on disk will have _no effect_ on installed packages.
 
-This means that you cannot e.g. patch a dependency to be compatible with an earlier version of PHP or change the framework version that a plugin depends on.
+This means that an ordinary file patch cannot e.g. change a dependency's PHP constraint or the framework version that a plugin depends on.
 
 If you need to modify a dependency's `composer.json` or its underlying dependencies, you must do one of the following:
 
 - Work to get the underlying issue resolved in the upstream package.
 - Fork the package and [specify your fork as the package repository](https://getcomposer.org/doc/05-repositories.md#vcs) in your root `composer.json`
 - Specify compatible package version requirements in your root `composer.json`
+- For metapackages, use the separate pre-resolution [metadata patch workflow]({{< relref "../usage/metapackage-metadata.md" >}}).
 
 @anotherjames over at @computerminds wrote an article about how to work around
 that particular problem for a Drupal 8 -> Drupal 9 upgrade:
@@ -24,7 +25,7 @@ that particular problem for a Drupal 8 -> Drupal 9 upgrade:
 
 ## Metapackages
 
-Composer has the concept of a "metapackage", which is an empty package that contains requirements and will trigger their installation, but contains no files and will not write anything to the filesystem. Because there is no filesystem path available at all, this plugin is not capable of applying a patch to metapackages.
+Composer has the concept of a "metapackage", which is an empty package that contains requirements and will trigger their installation, but contains no files and will not write anything to the filesystem. Ordinary filesystem patches cannot target metapackages. The separate, opt-in [metadata patch workflow]({{< relref "../usage/metapackage-metadata.md" >}}) can apply dependency metadata patches supplied by a custom metapackage before Composer resolves an external metapackage's dependencies.
 
 There are two different use cases to distinguish:
 
@@ -78,7 +79,7 @@ Run `composer update vendor/distribution --with-all-dependencies` to resolve the
 
 Repositories are [root-only](https://getcomposer.org/doc/04-schema.md#repositories), and Composer 2 repositories are [canonical by default](https://getcomposer.org/doc/articles/repository-priorities.md). This override hides other versions of the same metapackage from lower-priority repositories, including Packagist. You are responsible for keeping the replacement metadata up to date; it does not automatically track upstream releases. Changing constraints does not itself make an incompatible library compatible: apply any necessary file patches to the actual dependency and test the resulting combination.
 
-This workflow uses Composer's existing repository support and Composer Patches' existing file patching support. It does not enable patches targeting a metapackage itself or introduce automatic metadata patching.
+This manual replacement workflow uses Composer's existing repository support and Composer Patches' existing file patching support. For patches and patch files distributed through another metapackage without manually copying replacement metadata to the root project, use [metapackage metadata patches]({{< relref "../usage/metapackage-metadata.md" >}}).
 
 ## Specific dependencies
 

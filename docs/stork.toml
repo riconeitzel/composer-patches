@@ -18,5 +18,6 @@ files = [
     { path = "usage/configuration.md", url = "/usage/configuration/", title = "Configuration" },
     { path = "usage/defining-patches.md", url = "/usage/defining-patches/", title = "Defining Patches" },
     { path = "usage/freeform-patcher.md", url = "/usage/freeform-patcher/", title = "Freeform Patcher" },
+    { path = "usage/metapackage-metadata.md", url = "/usage/metapackage-metadata/", title = "Metapackage Metadata Patches" },
     { path = "usage/recommended-workflows.md", url = "/usage/recommended-workflows/", title = "Recommended Workflows" },
 ]
